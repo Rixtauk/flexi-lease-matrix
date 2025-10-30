@@ -57,6 +57,24 @@ export function ControlsPanel({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {/* Lease Term */}
+        <div className="space-y-2">
+          <Label htmlFor="lease-term" className="text-sm font-medium">
+            Lease Term: {inputs.selectedTerm} months
+          </Label>
+          <Slider
+            id="lease-term"
+            min={6}
+            max={60}
+            step={6}
+            value={[inputs.selectedTerm]}
+            onValueChange={(value) =>
+              onInputsChange({ ...inputs, selectedTerm: value[0] as any })
+            }
+            className="w-full"
+          />
+        </div>
+
         {/* Vehicle Price */}
         <div className="space-y-2">
           <Label htmlFor="vehicle-price" className="text-sm font-medium">
@@ -81,7 +99,7 @@ export function ControlsPanel({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="mileage" className="text-sm font-medium">
-              Mileage (extra k/yr): {inputs.mileageThousandsPerYear}k
+              Mileage (k/yr): {inputs.mileageThousandsPerYear}k
             </Label>
             <TooltipProvider>
               <Tooltip>
@@ -89,7 +107,7 @@ export function ControlsPanel({
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Each +1 here = +£100 per 6 months to the total, scaled by term length.</p>
+                  <p>12k miles/year baseline included. Beyond 12k: +£100 per 1000 miles per 6 months.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

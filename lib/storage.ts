@@ -11,6 +11,7 @@ export const DEFAULT_INPUTS: LeaseInputs = {
   globalDepositMonths: 3,
   perTermDeposits: {},
   applyDepositGlobally: true,
+  selectedTerm: 24,
 };
 
 /**
@@ -42,6 +43,7 @@ export function loadInputs(): LeaseInputs {
       globalDepositMonths: typeof parsed.globalDepositMonths === "number" ? parsed.globalDepositMonths : DEFAULT_INPUTS.globalDepositMonths,
       perTermDeposits: parsed.perTermDeposits || {},
       applyDepositGlobally: typeof parsed.applyDepositGlobally === "boolean" ? parsed.applyDepositGlobally : DEFAULT_INPUTS.applyDepositGlobally,
+      selectedTerm: typeof parsed.selectedTerm === "number" && [6, 12, 18, 24, 36, 48, 60].includes(parsed.selectedTerm) ? parsed.selectedTerm as TermMonths : DEFAULT_INPUTS.selectedTerm,
     };
   } catch (error) {
     console.error("Failed to load inputs from localStorage:", error);

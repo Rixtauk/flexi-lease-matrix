@@ -43,11 +43,12 @@ export function adjustedPrice(base: number, term: TermMonths): number {
 
 /**
  * Calculate mileage add-on for a term.
- * For every extra 1000 miles per year, add £100 per 6 months.
- * Formula: £100 * mileageThousandsPerYear * (termMonths / 6)
+ * Assumes 12k miles per year baseline (no charge for 0-12k).
+ * For every 1000 miles per year beyond 12k, add £100 per 6 months.
+ * Formula: £100 * Math.max(0, mileageThousandsPerYear - 12) * (termMonths / 6)
  */
 export function mileageAddon(milesKPerYear: number, term: TermMonths): number {
-  return 100 * milesKPerYear * (term / 6);
+  return 100 * Math.max(0, milesKPerYear - 12) * (term / 6);
 }
 
 /**

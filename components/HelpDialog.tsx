@@ -55,16 +55,22 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
           <section>
             <h3 className="text-lg font-semibold mb-2">Mileage Add-on</h3>
             <p className="text-sm text-muted-foreground mb-2">
-              For every extra 1,000 miles per year selected, add £100 per 6-month period of the term:
+              The calculator includes a baseline of 12,000 miles per year at no additional charge. For every 1,000 miles per year beyond 12k, add £100 per 6-month period of the term:
             </p>
             <div className="bg-muted p-3 rounded-md font-mono text-sm mb-2">
-              mileageAddon = £100 × mileageThousandsPerYear × (termMonths ÷ 6)
+              mileageAddon = £100 × Math.max(0, mileageThousandsPerYear - 12) × (termMonths ÷ 6)
             </div>
             <p className="text-sm">
-              <strong>Example:</strong> +10k miles/year on a 24-month term = £100 × 10 × 4 = £4,000
+              <strong>Examples:</strong>
             </p>
+            <ul className="text-sm space-y-1 mt-2 ml-4">
+              <li>• 10k miles/year on 24m term = £0 (below 12k baseline)</li>
+              <li>• 12k miles/year on 24m term = £0 (at baseline)</li>
+              <li>• 15k miles/year on 24m term = £100 × 3 × 4 = £1,200</li>
+              <li>• 20k miles/year on 24m term = £100 × 8 × 4 = £3,200</li>
+            </ul>
             <p className="text-sm text-muted-foreground mt-2">
-              Note: The &ldquo;mileage&rdquo; slider represents extra thousands of miles per year beyond any assumed base (default base = 0).
+              Note: The mileage slider shows total annual mileage. Only miles beyond 12k/year are charged.
             </p>
           </section>
 

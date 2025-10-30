@@ -4,10 +4,10 @@ import { LeaseInputs, LeaseOutputRow } from "./types";
 import { gbp, pct } from "./format";
 
 /**
- * Export the lease matrix data to a PDF file
+ * Export a single lease quote to a PDF file
  */
 export function exportToPdf(
-  matrix: LeaseOutputRow[],
+  row: LeaseOutputRow,
   inputs: LeaseInputs
 ): void {
   // Create a new PDF document
@@ -16,7 +16,7 @@ export function exportToPdf(
   // Add title
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("Vehicle Leasing Matrix", 14, 20);
+  doc.text("Vehicle Lease Quote", 14, 20);
 
   // Add subtitle
   doc.setFontSize(10);
@@ -50,7 +50,7 @@ export function exportToPdf(
     parametersY + 18
   );
 
-  // Prepare table data
+  // Prepare table data (single row)
   const tableHeaders = [
     "Term",
     "Monthly",
@@ -59,10 +59,9 @@ export function exportToPdf(
     "Balloon %",
     "Balloon £",
     "Adjusted Price",
-    "Mileage Add-on",
   ];
 
-  const tableData = matrix.map((row) => [
+  const tableData = [[
     `${row.term}m`,
     gbp(row.monthly),
     `${row.depositMonthsUsed}m`,
@@ -70,8 +69,7 @@ export function exportToPdf(
     pct(row.balloonPct),
     gbp(row.balloonValue),
     gbp(row.adjustedVehiclePrice),
-    gbp(row.mileageAddon),
-  ]);
+  ]];
 
   // Add the table
   autoTable(doc, {
@@ -91,14 +89,13 @@ export function exportToPdf(
       halign: "center",
     },
     columnStyles: {
-      0: { halign: "center", cellWidth: 16 },
-      1: { halign: "right", cellWidth: 23 },
-      2: { halign: "center", cellWidth: 18 },
-      3: { halign: "right", cellWidth: 25 },
-      4: { halign: "center", cellWidth: 20 },
-      5: { halign: "right", cellWidth: 23 },
-      6: { halign: "right", cellWidth: 27 },
-      7: { halign: "right", cellWidth: 25 },
+      0: { halign: "center", cellWidth: 20 },
+      1: { halign: "right", cellWidth: 28 },
+      2: { halign: "center", cellWidth: 22 },
+      3: { halign: "right", cellWidth: 30 },
+      4: { halign: "center", cellWidth: 24 },
+      5: { halign: "right", cellWidth: 28 },
+      6: { halign: "right", cellWidth: 30 },
     },
     alternateRowStyles: {
       fillColor: [245, 245, 245],
@@ -130,6 +127,6 @@ export function exportToPdf(
   );
 
   // Save the PDF
-  const filename = `lease-matrix-${Date.now()}.pdf`;
+  const filename = `lease-quote-${row.term}m-${Date.now()}.pdf`;
   doc.save(filename);
 }

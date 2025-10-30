@@ -6,6 +6,7 @@ export interface LeaseInputs {
   globalDepositMonths: number;       // 0..12
   perTermDeposits?: Partial<Record<TermMonths, number>>;
   applyDepositGlobally: boolean;
+  selectedTerm: TermMonths;          // selected term to display, e.g., 24
 }
 
 export interface LeaseOutputRow {

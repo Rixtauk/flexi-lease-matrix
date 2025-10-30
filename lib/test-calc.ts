@@ -43,20 +43,34 @@ console.log(`  Amortizable = ${gbp(result24.amortizable)}`);
 console.log(`  Monthly = ${gbp(result24.monthly)}`);
 console.log(`  Upfront initial rental = ${gbp(result24.upfrontInitialRental)}`);
 
-// Test 3: With mileage add-on
-console.log("\n\nTest 3: £33,000, +10k mileage, 3 months deposit, 24 months");
+// Test 3: With mileage add-on (12k baseline)
+console.log("\n\nTest 3a: £33,000, 10k mileage (below 12k baseline), 3 months deposit, 24 months");
 console.log("Expected:");
-console.log("  Mileage add-on = £4,000");
-console.log("  Amortizable = £19,892.80");
-console.log("  Monthly ≈ £736.77");
-console.log("  Initial rental ≈ £2,210.31");
+console.log("  Mileage add-on = £0 (10k < 12k baseline)");
+console.log("  Amortizable = £15,892.80");
+console.log("  Monthly ≈ £588.62");
+console.log("  Initial rental ≈ £1,765.86");
 
-const result24Mileage = computeRow(33000, 10, 24, 3);
+const result24Mileage10k = computeRow(33000, 10, 24, 3);
 console.log("\nActual:");
-console.log(`  Mileage add-on = ${gbp(result24Mileage.mileageAddon)}`);
-console.log(`  Amortizable = ${gbp(result24Mileage.amortizable)}`);
-console.log(`  Monthly = ${gbp(result24Mileage.monthly)}`);
-console.log(`  Initial rental = ${gbp(result24Mileage.upfrontInitialRental)}`);
+console.log(`  Mileage add-on = ${gbp(result24Mileage10k.mileageAddon)}`);
+console.log(`  Amortizable = ${gbp(result24Mileage10k.amortizable)}`);
+console.log(`  Monthly = ${gbp(result24Mileage10k.monthly)}`);
+console.log(`  Initial rental = ${gbp(result24Mileage10k.upfrontInitialRental)}`);
+
+console.log("\n\nTest 3b: £33,000, 20k mileage (above 12k baseline), 3 months deposit, 24 months");
+console.log("Expected:");
+console.log("  Mileage add-on = £100 × (20-12) × 4 = £3,200");
+console.log("  Amortizable = £19,092.80");
+console.log("  Monthly ≈ £707.14");
+console.log("  Initial rental ≈ £2,121.41");
+
+const result24Mileage20k = computeRow(33000, 20, 24, 3);
+console.log("\nActual:");
+console.log(`  Mileage add-on = ${gbp(result24Mileage20k.mileageAddon)}`);
+console.log(`  Amortizable = ${gbp(result24Mileage20k.amortizable)}`);
+console.log(`  Monthly = ${gbp(result24Mileage20k.monthly)}`);
+console.log(`  Initial rental = ${gbp(result24Mileage20k.upfrontInitialRental)}`);
 
 // Test 4: 18-month balloon interpolation
 console.log("\n\nTest 4: 18-month balloon interpolation");

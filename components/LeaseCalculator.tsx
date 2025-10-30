@@ -2,15 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { LeaseInputs, TermMonths } from "@/lib/types";
-import { computeMatrix } from "@/lib/calc";
+import { computeRow } from "@/lib/calc";
 import { loadInputs, saveInputs, DEFAULT_INPUTS } from "@/lib/storage";
 import { gbp, pct } from "@/lib/format";
 import { exportToPdf } from "@/lib/exportPdf";
 import { ControlsPanel } from "./ControlsPanel";
-import { TermRow } from "./TermRow";
 import { HelpDialog } from "./HelpDialog";
 import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
 export function LeaseCalculator() {
@@ -32,8 +30,13 @@ export function LeaseCalculator() {
     }
   }, [inputs, isMounted]);
 
-  // Compute matrix with memoization
-  const matrix = useMemo(() => computeMatrix(inputs), [inputs]);
+  // Compute single row for selected term with memoization
+  const result = useMemo(() => {
+    const deposit = inputs.applyDepositGlobally
+      ? inputs.globalDepositMonths
+      : Math.max(0, Math.min(12, inputs.perTermDeposits?.[inputs.selectedTerm] ?? inputs.globalDepositMonths));
+    return computeRow(inputs.vehiclePrice, inputs.mileageThousandsPerYear, inputs.selectedTerm, deposit);
+  }, [inputs]);
 
   const handleInputsChange = (newInputs: LeaseInputs) => {
     setInputs(newInputs);
@@ -66,29 +69,25 @@ export function LeaseCalculator() {
       "BalloonPct",
       "BalloonGBP",
       "AdjustedPriceGBP",
-      "MileageAddonGBP",
-      "AmortizableGBP",
     ];
 
-    const rows = matrix.map((row) => [
-      row.term.toString(),
-      row.monthly.toFixed(2),
-      row.depositMonthsUsed.toString(),
-      row.upfrontInitialRental.toFixed(2),
-      (row.balloonPct * 100).toFixed(1),
-      row.balloonValue.toFixed(2),
-      row.adjustedVehiclePrice.toFixed(2),
-      row.mileageAddon.toFixed(2),
-      row.amortizable.toFixed(2),
-    ]);
+    const row = [
+      result.term.toString(),
+      result.monthly.toFixed(2),
+      result.depositMonthsUsed.toString(),
+      result.upfrontInitialRental.toFixed(2),
+      (result.balloonPct * 100).toFixed(1),
+      result.balloonValue.toFixed(2),
+      result.adjustedVehiclePrice.toFixed(2),
+    ];
 
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csv = [headers.join(","), row.join(",")].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lease-matrix-${Date.now()}.csv`;
+    a.download = `lease-quote-${result.term}m-${Date.now()}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -96,16 +95,16 @@ export function LeaseCalculator() {
 
     toast({
       title: "CSV Exported",
-      description: "The lease matrix has been exported to CSV.",
+      description: "The lease quote has been exported to CSV.",
     });
   };
 
   const handleExportPDF = () => {
     try {
-      exportToPdf(matrix, inputs);
+      exportToPdf(result, inputs);
       toast({
         title: "PDF Exported",
-        description: "The lease matrix has been exported to PDF.",
+        description: "The lease quote has been exported to PDF.",
       });
     } catch (error) {
       toast({
@@ -117,50 +116,33 @@ export function LeaseCalculator() {
   };
 
   const handleCopyMatrix = async () => {
-    const text = matrix
-      .map(
-        (row) =>
-          `${row.term}m | Monthly ${gbp(row.monthly)} | Deposit ${
-            row.depositMonthsUsed
-          }m (${gbp(row.upfrontInitialRental)}) | Balloon ${pct(row.balloonPct)} (${gbp(
-            row.balloonValue
-          )}) | Adjusted ${gbp(row.adjustedVehiclePrice)} | Mileage add-on ${gbp(
-            row.mileageAddon
-          )}`
-      )
-      .join("\n");
+    const text = `${result.term}m Lease Quote
+Monthly Payment: ${gbp(result.monthly)}
+Initial Rental: ${result.depositMonthsUsed}m (${gbp(result.upfrontInitialRental)})
+Balloon: ${pct(result.balloonPct)} (${gbp(result.balloonValue)})
+Adjusted Price: ${gbp(result.adjustedVehiclePrice)}`;
 
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Matrix Copied",
-        description: "The lease matrix has been copied to clipboard.",
+        title: "Quote Copied",
+        description: "The lease quote has been copied to clipboard.",
       });
     } catch (error) {
       toast({
         title: "Copy Failed",
-        description: "Failed to copy matrix to clipboard.",
+        description: "Failed to copy quote to clipboard.",
         variant: "destructive",
       });
     }
   };
 
-  // Detect mobile/desktop for responsive layout
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Vehicle Leasing Matrix</h1>
+        <h1 className="text-4xl font-bold mb-2">Vehicle Leasing Calculator</h1>
         <p className="text-muted-foreground">
-          Calculate monthly lease costs across multiple terms with flexible deposits
+          Calculate your monthly lease costs with flexible terms and deposits
         </p>
       </div>
 
@@ -175,53 +157,48 @@ export function LeaseCalculator() {
       />
 
       {/* Info line */}
-      <div className="mb-4 p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+      <div className="mb-6 p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
         <strong>Formula:</strong> Monthly = (Adjusted Price - Balloon + Mileage Add-on) ÷
         (Months + Deposit Months). Initial rental is prepaid monthly × deposit months.
       </div>
 
-      {/* Matrix Display */}
-      {isMobile ? (
-        <div className="space-y-4">
-          {matrix.map((row) => (
-            <TermRow
-              key={row.term}
-              row={row}
-              showDepositOverride={!inputs.applyDepositGlobally}
-              onDepositChange={handleDepositChange}
-              isMobile={true}
-            />
-          ))}
+      {/* Single Result Card */}
+      <Card className="p-8 mb-6 bg-gradient-to-br from-card to-muted/20">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">{result.term} Month Lease</h2>
+          <div className="text-6xl font-bold" style={{ color: "#D53847" }}>
+            {gbp(result.monthly)}
+          </div>
+          <p className="text-lg text-muted-foreground mt-2">per month</p>
         </div>
-      ) : (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Term</TableHead>
-                <TableHead>Monthly</TableHead>
-                <TableHead>Initial Rental</TableHead>
-                <TableHead>Balloon</TableHead>
-                <TableHead>Adjusted Price</TableHead>
-                <TableHead>Mileage Add-on</TableHead>
-                {!inputs.applyDepositGlobally && <TableHead>Deposit Override</TableHead>}
-                <TableHead>Copy</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {matrix.map((row) => (
-                <TermRow
-                  key={row.term}
-                  row={row}
-                  showDepositOverride={!inputs.applyDepositGlobally}
-                  onDepositChange={handleDepositChange}
-                  isMobile={false}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground mb-1">Initial Rental</p>
+            <p className="text-2xl font-bold">{gbp(result.upfrontInitialRental)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{result.depositMonthsUsed} months deposit</p>
+          </div>
+
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground mb-1">Balloon Payment</p>
+            <p className="text-2xl font-bold">{gbp(result.balloonValue)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{pct(result.balloonPct)} of adjusted price</p>
+          </div>
+
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground mb-1">Adjusted Vehicle Price</p>
+            <p className="text-2xl font-bold">{gbp(result.adjustedVehiclePrice)}</p>
+          </div>
+
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground mb-1">Mileage Add-on</p>
+            <p className="text-2xl font-bold">{gbp(result.mileageAddon)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {inputs.mileageThousandsPerYear}k miles/year
+            </p>
+          </div>
+        </div>
+      </Card>
 
       <HelpDialog open={showHelp} onOpenChange={setShowHelp} />
     </div>
