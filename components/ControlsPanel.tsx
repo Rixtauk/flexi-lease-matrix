@@ -48,7 +48,7 @@ export function ControlsPanel({
   };
 
   return (
-    <Card className="p-6 mb-6 sticky top-24 z-10 bg-card shadow-lg">
+    <Card className="p-6 mb-6 bg-card shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Lease Calculator Controls</h2>
         <Button variant="ghost" size="icon" onClick={onShowHelp}>
