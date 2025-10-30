@@ -173,24 +173,24 @@ Adjusted Price: ${gbp(result.adjustedVehiclePrice)}`;
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <div className="bg-card p-4 rounded-lg border">
+          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-lg border border-border/50 hover:border-brand/50 hover:bg-card/80 hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <p className="text-sm text-muted-foreground mb-1">Initial Rental</p>
             <p className="text-2xl font-bold">{gbp(result.upfrontInitialRental)}</p>
             <p className="text-xs text-muted-foreground mt-1">{result.depositMonthsUsed} months deposit</p>
           </div>
 
-          <div className="bg-card p-4 rounded-lg border">
+          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-lg border border-border/50 hover:border-brand/50 hover:bg-card/80 hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <p className="text-sm text-muted-foreground mb-1">Balloon Payment</p>
             <p className="text-2xl font-bold">{gbp(result.balloonValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">{pct(result.balloonPct)} of adjusted price</p>
           </div>
 
-          <div className="bg-card p-4 rounded-lg border">
+          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-lg border border-border/50 hover:border-brand/50 hover:bg-card/80 hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <p className="text-sm text-muted-foreground mb-1">Adjusted Vehicle Price</p>
             <p className="text-2xl font-bold">{gbp(result.adjustedVehiclePrice)}</p>
           </div>
 
-          <div className="bg-card p-4 rounded-lg border">
+          <div className="bg-card/50 backdrop-blur-sm p-4 rounded-lg border border-border/50 hover:border-brand/50 hover:bg-card/80 hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <p className="text-sm text-muted-foreground mb-1">Mileage Add-on</p>
             <p className="text-2xl font-bold">{gbp(result.mileageAddon)}</p>
             <p className="text-xs text-muted-foreground mt-1">
